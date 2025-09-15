@@ -273,7 +273,7 @@ function drawGame() {
   } else if (p1Score > 4) {
     score.textContent = `P1 Winner!`
     newGame = true
-    startButton.textContent("reset game")
+    startButton.textContent = "reset game"
   } else if (p2Score > 4) {
     isSinglePlayer
       ? (score.textContent = `PCU Winner!`)
