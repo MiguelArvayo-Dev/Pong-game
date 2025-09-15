@@ -57,6 +57,19 @@ let rightInputDown = false
 let leftInputUp = false
 let leftInputDown = false
 
+function drawLine() {
+  context.beginPath()
+  context.setLineDash([10, 15]) // [dash length, gap length]
+  context.moveTo(canvas.width / 2, 0)
+  context.lineTo(canvas.width / 2, canvas.height)
+  context.strokeStyle = "white"
+  context.lineWidth = 2
+  context.stroke()
+
+  // Reset line dash so it doesn’t affect paddles/ball later
+  context.setLineDash([])
+}
+
 function drawBall() {
   context.beginPath()
   context.arc(ballX, ballY, ballRadius, 0, Math.PI * 2) //center coordinates, radius, start and finish angles
@@ -241,6 +254,7 @@ function drawGame() {
   clearCanvas()
 
   //refresh drawing functions
+  drawLine()
   drawBall()
   drawLeftPaddle()
   drawRightPaddle()
@@ -259,11 +273,13 @@ function drawGame() {
   } else if (p1Score > 4) {
     score.textContent = `P1 Winner!`
     newGame = true
+    startButton.textContent("reset game")
   } else if (p2Score > 4) {
     isSinglePlayer
       ? (score.textContent = `PCU Winner!`)
       : (score.textContent = `P2 Winner!`)
     newGame = true
+    startButton.textContent = "reset game"
   }
 }
 
@@ -278,6 +294,7 @@ function handleStart() {
     })
     p1Score = 0
     p2Score = 0
+    startButton.textContent = "start game"
     startServe("right")
     newGame = false
     drawGame()

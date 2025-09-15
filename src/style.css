@@ -15,6 +15,8 @@
 
 body {
   background-color: #1a1a1a;
+  max-width: 650px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
 }
@@ -22,7 +24,14 @@ body {
 .start {
   width: 100px;
   margin: 0 auto;
-  margin-bottom: 35px;
+  margin-bottom: 15px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.start:hover {
+  background-color: #535bf2;
 }
 .game-container {
   position: relative; /* makes children use this as reference */
@@ -50,6 +59,30 @@ canvas {
 }
 
 .players {
+  margin-top: 10px;
   font-weight: bold;
   font-family: "Press Start 2P", monospace;
+}
+
+.controlls-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.controlls-p1 {
+  display: flex;
+  flex-direction: row;
+  margin-left: 25px;
+}
+
+.controlls-p2 {
+  display: flex;
+  flex-direction: row;
+  margin-right: 25px;
+}
+
+.controlls {
+  font-family: "Press Start 2P", monospace;
+  margin-left: 15px;
 }
