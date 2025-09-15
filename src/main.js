@@ -22,7 +22,7 @@ const players = document.querySelectorAll('input[name="toggle"]')
 let isSinglePlayer = true
 
 //ball variables
-const ballRadius = 5
+const ballRadius = 10
 let randomServe = Math.floor(Math.random() * (100 - 50 + 1)) + 50
 
 let ballX = canvas.width / 2
@@ -49,13 +49,13 @@ let rightPaddleWidth = 10
 let rightPaddleX = canvas.width - 10 - rightPaddleWidth
 let rightPaddleY = (canvas.height - rightPaddleHeight) / 2 //center paddle
 
-//right paddle inputs
-let rightInputUp = false
-let rightInputDown = false
-
 //left paddle inputs
 let leftInputUp = false
 let leftInputDown = false
+
+//right paddle inputs
+let rightInputUp = false
+let rightInputDown = false
 
 function drawLine() {
   context.beginPath()
@@ -276,7 +276,7 @@ function drawGame() {
     startButton.textContent = "reset game"
   } else if (p2Score > 4) {
     isSinglePlayer
-      ? (score.textContent = `PCU Winner!`)
+      ? (score.textContent = `CPU Winner!`)
       : (score.textContent = `P2 Winner!`)
     newGame = true
     startButton.textContent = "reset game"
