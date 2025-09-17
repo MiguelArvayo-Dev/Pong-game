@@ -79,7 +79,7 @@ function drawBall() {
 }
 
 function ballMovement(delta) {
-  const ballSpeed = 200
+  const ballSpeed = isServe ? 200 : 500
   ballX += ballDirectionX * delta * ballSpeed
   ballY += ballDirectionY * delta * ballSpeed
 }
@@ -198,56 +198,60 @@ function cpuPlayer(delta) {
 }
 
 function collisionDetection() {
-  // --- scoring ---
+  // detect p1 point
   if (ballX - ballRadius <= 0) {
-    // Ball passed left wall
-    p2Score++
+    p2Score += 1
     startServe("left")
-    return
   }
 
+  // detect p2 point
   if (ballX + ballRadius >= canvas.width) {
-    // Ball passed right wall
-    p1Score++
+    p1Score += 1
     startServe("right")
-    return
   }
 
-  // --- top/bottom bounce ---
+  // detect hit with top or bottom
   if (ballY - ballRadius <= 0 || ballY + ballRadius >= canvas.height) {
     ballDirectionY = -ballDirectionY
   }
 
-  // --- left paddle collision ---
+  // --- LEFT PADDLE COLLISION ---
   if (
     ballX - ballRadius <= leftPaddleX + leftPaddleWidth &&
     ballY >= leftPaddleY &&
     ballY <= leftPaddleY + leftPaddleHeight
   ) {
-    ballX = leftPaddleX + leftPaddleWidth + ballRadius // push outside
-    ballDirectionX = Math.abs(ballDirectionX) // ensure positive (go right)
+    let paddleCenter = leftPaddleY + leftPaddleHeight / 2
+    let relativeIntersectY = ballY - paddleCenter
+    let normalizedIntersectY = relativeIntersectY / (leftPaddleHeight / 2)
 
-    if (isServe) {
-      ballDirectionX *= 2
-      ballDirectionY *= 2
-      isServe = false
-    }
+    let maxBounceAngle = (75 * Math.PI) / 180 // 75 degrees in radians
+    let bounceAngle = normalizedIntersectY * maxBounceAngle
+
+    ballDirectionX = Math.cos(bounceAngle)
+    ballDirectionY = Math.sin(bounceAngle)
+
+    isServe = false
   }
 
-  // --- right paddle collision ---
+  // --- RIGHT PADDLE COLLISION ---
   if (
     ballX + ballRadius >= rightPaddleX &&
     ballY >= rightPaddleY &&
     ballY <= rightPaddleY + rightPaddleHeight
   ) {
-    ballX = rightPaddleX - ballRadius // push outside
-    ballDirectionX = -Math.abs(ballDirectionX) // ensure negative (go left)
+    let paddleCenter = rightPaddleY + rightPaddleHeight / 2
+    let relativeIntersectY = ballY - paddleCenter
+    let normalizedIntersectY = relativeIntersectY / (rightPaddleHeight / 2)
 
-    if (isServe) {
-      ballDirectionX *= 2
-      ballDirectionY *= 2
-      isServe = false
-    }
+    let maxBounceAngle = (75 * Math.PI) / 180
+    let bounceAngle = normalizedIntersectY * maxBounceAngle
+    let ballSpeed = 300
+
+    ballDirectionX = -Math.cos(bounceAngle) // ← flip X direction
+    ballDirectionY = Math.sin(bounceAngle)
+
+    isServe = false
   }
 }
 
