@@ -78,9 +78,10 @@ function drawBall() {
   context.closePath()
 }
 
-function ballMovement() {
-  ballX += ballDirectionX
-  ballY += ballDirectionY
+function ballMovement(delta) {
+  const ballSpeed = 200
+  ballX += ballDirectionX * delta * ballSpeed
+  ballY += ballDirectionY * delta * ballSpeed
 }
 
 function startServe(serveDirection) {
@@ -162,84 +163,89 @@ function initEvents() {
   }
 }
 
-function leftPaddleMovement() {
+function leftPaddleMovement(delta) {
+  const paddleSpeed = 600
   if (leftInputUp && leftPaddleY > 0) {
-    leftPaddleY -= 3
+    leftPaddleY -= paddleSpeed * delta
   } else if (leftInputDown && leftPaddleY < canvas.height - leftPaddleHeight) {
-    leftPaddleY += 3
+    leftPaddleY += paddleSpeed * delta
   }
 }
 
-function rightPaddleMovement() {
+function rightPaddleMovement(delta) {
+  const paddleSpeed = 600
   if (rightInputUp && rightPaddleY > 0) {
-    rightPaddleY -= 3
+    rightPaddleY -= paddleSpeed * delta
   } else if (
     rightInputDown &&
     rightPaddleY < canvas.height - rightPaddleHeight
   ) {
-    rightPaddleY += 3
+    rightPaddleY += paddleSpeed * delta
   }
 }
 
-function cpuPlayer() {
+function cpuPlayer(delta) {
+  const paddleSpeed = isServe ? 200 : 400
   const rightPaddleCenter = rightPaddleY + rightPaddleHeight / 2
   if (ballX > canvas.width / 3) {
     if (ballY > rightPaddleCenter) {
-      rightPaddleY += 3
+      rightPaddleY += paddleSpeed * delta
     }
     if (ballY < rightPaddleCenter) {
-      rightPaddleY -= 3
+      rightPaddleY -= paddleSpeed * delta
     }
   }
 }
 
-function collitionDetection() {
-  //detect p1 point
-  if (ballX + ballDirectionX > canvas.width) {
-    p1Score += 1
-    startServe("right")
-  }
-
-  //detect p2 point - reset
-  if (ballX + ballDirectionX < 0) {
-    p2Score += 1
+function collisionDetection() {
+  // --- scoring ---
+  if (ballX - ballRadius <= 0) {
+    // Ball passed left wall
+    p2Score++
     startServe("left")
+    return
   }
 
-  //detect hit with top or buttom
-  if (ballY + ballDirectionY > canvas.height || ballY + ballDirectionY < 0) {
-    ballDirectionY = -ballDirectionY // inverting horizontal direction
+  if (ballX + ballRadius >= canvas.width) {
+    // Ball passed right wall
+    p1Score++
+    startServe("right")
+    return
   }
 
-  //detect left paddle hit
+  // --- top/bottom bounce ---
+  if (ballY - ballRadius <= 0 || ballY + ballRadius >= canvas.height) {
+    ballDirectionY = -ballDirectionY
+  }
+
+  // --- left paddle collision ---
   if (
-    ballX === leftPaddleX + leftPaddleWidth &&
-    ballY > leftPaddleY &&
-    ballY < leftPaddleY + leftPaddleHeight
+    ballX - ballRadius <= leftPaddleX + leftPaddleWidth &&
+    ballY >= leftPaddleY &&
+    ballY <= leftPaddleY + leftPaddleHeight
   ) {
-    ballDirectionX = -ballDirectionX
+    ballX = leftPaddleX + leftPaddleWidth + ballRadius // push outside
+    ballDirectionX = Math.abs(ballDirectionX) // ensure positive (go right)
 
-    //increase ball speed first hit
     if (isServe) {
-      ballDirectionX = ballDirectionX * 2
-      ballDirectionY = ballDirectionY * 2
+      ballDirectionX *= 2
+      ballDirectionY *= 2
       isServe = false
     }
   }
 
-  //detect right paddle hit
+  // --- right paddle collision ---
   if (
-    ballX === rightPaddleX &&
-    ballY > rightPaddleY &&
-    ballY < rightPaddleY + rightPaddleHeight
+    ballX + ballRadius >= rightPaddleX &&
+    ballY >= rightPaddleY &&
+    ballY <= rightPaddleY + rightPaddleHeight
   ) {
-    ballDirectionX = -ballDirectionX
-
-    //increase ball speed first hit
+    ballX = rightPaddleX - ballRadius // push outside
+    ballDirectionX = -Math.abs(ballDirectionX) // ensure negative (go left)
 
     if (isServe) {
-      ballDirectionX = ballDirectionX * 2
-      ballDirectionY = ballDirectionY * 2
+      ballDirectionX *= 2
+      ballDirectionY *= 2
       isServe = false
     }
   }
@@ -249,9 +255,17 @@ function clearCanvas() {
   context.clearRect(0, 0, canvas.width, canvas.height)
 }
 
-function drawGame() {
+let lastTime = performance.now()
+
+function drawGame(nowFrame) {
   //clear last frame
   clearCanvas()
+
+  //calculate delta
+  const delta = (nowFrame - lastTime) / 1000 // convert ms → seconds
+  lastTime = nowFrame
+
+  //console.log(`delta is: ${delta}`)
 
   //refresh drawing functions
   drawLine()
@@ -260,10 +274,10 @@ function drawGame() {
   drawRightPaddle()
 
   //update positions
-  ballMovement()
-  leftPaddleMovement()
-  isSinglePlayer ? cpuPlayer() : rightPaddleMovement()
-  collitionDetection()
+  ballMovement(delta)
+  leftPaddleMovement(delta)
+  isSinglePlayer ? cpuPlayer(delta) : rightPaddleMovement(delta)
+  collisionDetection()
 
   //loop function everyframe
   score.textContent = `${p1Score} - ${p2Score}`
@@ -297,7 +311,9 @@ function handleStart() {
     startButton.textContent = "start game"
     startServe("right")
     newGame = false
-    drawGame()
+
+    lastTime = performance.now()
+    requestAnimationFrame(drawGame)
   }
 }
 
